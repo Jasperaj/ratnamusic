@@ -35,6 +35,7 @@ function CartDrawer({ open, onClose, navigate }) {
               const price = p ? p.price : (i.price || 0);
               const name = p ? p.name : (i.name || "Item");
               const ne = p ? p.ne : (i.ne || "");
+              const availStock = p?.stock != null ? p.stock : 999;
               return (
                 <div className="cart-item" key={i.id}>
                   <div className="thumb">
@@ -48,7 +49,8 @@ function CartDrawer({ open, onClose, navigate }) {
                     <div className="ctl">
                       <button onClick={() => updateQty(i.id, i.qty - 1)}>−</button>
                       <span>{i.qty}</span>
-                      <button onClick={() => updateQty(i.id, i.qty + 1)}>+</button>
+                      <button onClick={() => updateQty(i.id, i.qty + 1)} disabled={i.qty >= availStock} style={i.qty >= availStock ? { opacity: 0.4, cursor: "not-allowed" } : {}}>+</button>
+                      {availStock < 999 && <span style={{ fontSize: 10, color: availStock <= 3 ? "var(--warn)" : "var(--ink-3)" }}>{availStock} left</span>}
                       <span style={{ flex: 1 }} />
                       <button onClick={() => removeFromCart(i.id)}>Remove</button>
                     </div>
@@ -579,6 +581,7 @@ function CheckoutPage({ navigate, onLoginNeeded, onPlaced }) {
               const p = getProductById(i.id);
               const price = p ? p.price : (i.price || 0);
               const name = p ? p.name : (i.name || "Item");
+              const availStock = p?.stock != null ? p.stock : 999;
               return (
                 <div className="item-line" key={i.id} style={{ display: "flex", flexDirection: "column", gap: 6, padding: "10px 0", borderBottom: "1px solid var(--rule)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -594,8 +597,9 @@ function CheckoutPage({ navigate, onLoginNeeded, onPlaced }) {
                     <span style={{ fontFamily: "var(--font-mono)", minWidth: 20, textAlign: "center" }}>{i.qty}</span>
                     <button
                       className="chip"
-                      style={{ width: 28, height: 28, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                      style={{ width: 28, height: 28, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: i.qty >= availStock ? "not-allowed" : "pointer", opacity: i.qty >= availStock ? 0.4 : 1 }}
                       onClick={() => updateQty(i.id, i.qty + 1)}
+                      disabled={i.qty >= availStock}
                     >+</button>
                     <span style={{ flex: 1 }} />
                     <button

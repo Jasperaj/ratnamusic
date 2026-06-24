@@ -357,24 +357,31 @@ function ProductPage({ id, navigate, onAdd }) {
               <div className="row"><span className="k">Delivery</span><span>Nepal-wide · 2–7 days</span></div>
             </div>
 
-            {p.inStock === false ? (
-              <div className="qty-row">
-                <button className="btn" disabled style={{ flex: 1, opacity: 0.5, cursor: "not-allowed", background: "#888", color: "white", border: "none" }}>
-                  Out of Stock · स्टकमा छैन
-                </button>
-              </div>
-            ) : (
-              <div className="qty-row">
-                <div className="qty">
-                  <button onClick={() => setQty(Math.max(1, qty - 1))}>−</button>
-                  <input value={qty} onChange={e => setQty(Math.max(1, parseInt(e.target.value) || 1))} />
-                  <button onClick={() => setQty(qty + 1)}>+</button>
+            {(() => {
+              const availStock = p.stock != null ? p.stock : (p.inStock !== false ? 10 : 0);
+              if (availStock <= 0) return (
+                <div className="qty-row">
+                  <button className="btn" disabled style={{ flex: 1, opacity: 0.5, cursor: "not-allowed", background: "#888", color: "white", border: "none" }}>
+                    Out of Stock · स्टकमा छैन
+                  </button>
                 </div>
-                <button className="btn accent" style={{ flex: 1 }} onClick={() => onAdd(p, qty)}>
-                  Add to cart · {NPR(p.price * qty)}
-                </button>
-              </div>
-            )}
+              );
+              return (
+                <div className="qty-row">
+                  <div className="qty">
+                    <button onClick={() => setQty(Math.max(1, qty - 1))}>−</button>
+                    <input value={qty} onChange={e => setQty(Math.max(1, Math.min(availStock, parseInt(e.target.value) || 1)))} />
+                    <button onClick={() => setQty(Math.min(availStock, qty + 1))}>+</button>
+                  </div>
+                  <button className="btn accent" style={{ flex: 1 }} onClick={() => onAdd(p, qty)}>
+                    Add to cart · {NPR(p.price * qty)}
+                  </button>
+                  <span className="h-mono" style={{ fontSize: 11, color: availStock <= 3 ? "var(--warn)" : "var(--ink-3)" }}>
+                    {availStock} in stock
+                  </span>
+                </div>
+              );
+            })()}
 
             {p.darazUrl && (
               <a className="btn block daraz buy-daraz" href={p.darazUrl} target="_blank" rel="noopener noreferrer">

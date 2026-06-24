@@ -110,6 +110,7 @@ function dbToProduct(row) {
     inStock: row.in_stock !== false,
     featured: row.featured || false,
     color: row.color || null,
+    stock: row.stock != null ? Number(row.stock) : (row.in_stock !== false ? 10 : 0),
   };
 }
 
@@ -130,6 +131,7 @@ function productToDb(p) {
     in_stock: p.inStock !== false,
     featured: p.featured || false,
     color: p.color || null,
+    stock: p.stock != null ? Number(p.stock) : (p.inStock !== false ? 10 : 0),
     updated_at: new Date().toISOString(),
   };
   // Only include id if it's a valid UUID (DB uses uuid type)
@@ -238,6 +240,20 @@ async function sbDeleteProduct(id) {
   if (error) throw error;
 }
 
+async function sbDecrementStock(productId, qty) {
+  // Fetch current stock, subtract qty, clamp to 0, update in_stock accordingly
+  const { data: row, error: fetchErr } = await sb.from("products").select("stock, in_stock").eq("id", productId).single();
+  if (fetchErr) throw fetchErr;
+  const currentStock = row.stock != null ? Number(row.stock) : 10;
+  const newStock = Math.max(0, currentStock - qty);
+  const { error: updErr } = await sb.from("products").update({
+    stock: newStock,
+    in_stock: newStock > 0,
+    updated_at: new Date().toISOString(),
+  }).eq("id", productId);
+  if (updErr) throw updErr;
+}
+
 // ---------- ORDERS CRUD ----------
 async function sbFetchOrders() {
   const { data, error } = await sb.from("orders").select("*").order("created_at", { ascending: false });
@@ -317,7 +333,7 @@ Object.assign(window, {
   sbSignIn, sbSignInWithGoogle, sbSendEmailOtp, sbVerifyEmailOtp,
   sbSignOut, sbGetSession, sbOnAuthChange,
   sbFetchProfile, sbUpsertProfile, dbToProfileJs,
-  sbFetchProducts, sbSeedProductsIfEmpty, sbUpsertProduct, sbDeleteProduct,
+  sbFetchProducts, sbSeedProductsIfEmpty, sbUpsertProduct, sbDeleteProduct, sbDecrementStock,
   sbFetchOrders, sbInsertOrder, sbUpdateOrderStatus,
   sbSubscribeProducts, sbSubscribeOrders, sbSubscribeProfiles,
   sbFetchSocialPosts, sbFetchAllSocialPosts, sbUpsertSocialPost, sbDeleteSocialPost,

@@ -262,16 +262,18 @@ function ProductCard({ p, onClick, onAdd }) {
   const src  = p.image || p.img || "";
   // Use badge from Supabase if tag is empty
   const displayTag = p.tag || p.badge || null;
+  const availStock = p.stock != null ? p.stock : (p.inStock !== false ? 10 : 0);
+  const isOut = availStock <= 0;
   return (
     <div className="product-card" onClick={() => onClick(p)}>
       <div className="frame">
         {src
           ? <ProductImage src={src} alt={p.name} fallbackLabel={productPhLabel(p)} fallbackTone={tone} />
           : <Placeholder label={productPhLabel(p)} tone={tone} />}
-        {p.inStock === false && <span className="tag" style={{ background: "#888", color: "white" }}>Out of Stock</span>}
-        {p.inStock !== false && displayTag && <span className={"tag" + (displayTag === "Sale" ? " sale" : displayTag === "New" ? " new" : "")}>{displayTag}</span>}
-        {p.inStock !== false && p.featured && !displayTag && <span className="tag" style={{ background: "var(--accent)", color: "white" }}>Featured</span>}
-        {p.inStock !== false ? (
+        {isOut && <span className="tag" style={{ background: "#888", color: "white" }}>Out of Stock</span>}
+        {!isOut && displayTag && <span className={"tag" + (displayTag === "Sale" ? " sale" : displayTag === "New" ? " new" : "")}>{displayTag}</span>}
+        {!isOut && p.featured && !displayTag && <span className="tag" style={{ background: "var(--accent)", color: "white" }}>Featured</span>}
+        {!isOut ? (
           <button className="btn small block accent quick-add" onClick={e => { e.stopPropagation(); onAdd(p); }}>Add to Cart</button>
         ) : (
           <button className="btn small block quick-add" disabled style={{ opacity: 0.5, cursor: "not-allowed" }}>Out of Stock</button>

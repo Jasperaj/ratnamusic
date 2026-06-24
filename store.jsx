@@ -181,21 +181,33 @@ function deliveryFee(subtotal) {
   return 350;
 }
 function addToCart(id, qty = 1) {
+  const p = getProductById(id);
+  if (!p) return;
+  // Enforce stock limit
+  const availStock = p.stock != null ? p.stock : (p.inStock !== false ? 999 : 0);
+  if (availStock <= 0) return;
   setStateGlobal(s => {
     const existing = s.cart.find(i => i.id === id);
+    const currentQty = existing ? existing.qty : 0;
+    const maxAdd = Math.max(0, availStock - currentQty);
+    const actualQty = Math.min(qty, maxAdd);
+    if (actualQty <= 0) return s; // already at stock limit
     if (existing) {
-      return { ...s, cart: s.cart.map(i => i.id === id ? { ...i, qty: i.qty + qty } : i) };
+      return { ...s, cart: s.cart.map(i => i.id === id ? { ...i, qty: i.qty + actualQty } : i) };
     }
     // Store price and name in cart so totals work even if catalog hasn't loaded
-    const p = getProductById(id);
-    const item = { id, qty, price: p?.price || 0, name: p?.name || "", ne: p?.ne || "" };
+    const item = { id, qty: actualQty, price: p?.price || 0, name: p?.name || "", ne: p?.ne || "" };
     return { ...s, cart: [...s.cart, item] };
   });
 }
 function updateQty(id, qty) {
+  if (qty <= 0) { removeFromCart(id); return; }
+  const p = getProductById(id);
+  const availStock = p?.stock != null ? p.stock : 999;
+  const clamped = Math.min(qty, availStock);
   setStateGlobal(s => ({
     ...s,
-    cart: qty <= 0 ? s.cart.filter(i => i.id !== id) : s.cart.map(i => i.id === id ? { ...i, qty } : i),
+    cart: s.cart.map(i => i.id === id ? { ...i, qty: clamped } : i),
   }));
 }
 function removeFromCart(id) { setStateGlobal(s => ({ ...s, cart: s.cart.filter(i => i.id !== id) })); }
@@ -388,6 +400,11 @@ async function placeOrder(userProfile) {
       user: { ...(s.user || {}), ...userProfile },
       syncing: false, error: null,
     }));
+
+    // Decrement stock for each ordered item
+    for (const item of items) {
+      try { await sbDecrementStock(item.id, item.qty); } catch (e) { console.error("Stock decrement:", e); }
+    }
 
     // Persist profile to Supabase after first order
     const userId = state.userSession?.user?.id;

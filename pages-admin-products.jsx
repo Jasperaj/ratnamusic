@@ -38,6 +38,7 @@ function ProductsAdmin() {
       desc: "",
       inStock: true,
       featured: false,
+      stock: 10,
     });
   };
 
@@ -132,8 +133,8 @@ function ProductsAdmin() {
               {NPR(p.price)}
               {p.was && <span style={{ display: "block", color: "var(--ink-3)", fontSize: 11, textDecoration: "line-through" }}>{NPR(p.was)}</span>}
             </span>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: p.inStock !== false ? "green" : "var(--warn)" }}>
-              {p.inStock !== false ? "In Stock" : "Out"}
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: (p.stock != null ? p.stock : (p.inStock !== false ? 10 : 0)) > 0 ? "green" : "var(--warn)" }}>
+              {(p.stock != null ? p.stock : (p.inStock !== false ? 10 : 0)) > 0 ? (p.stock != null ? p.stock : 10) + " pcs" : "Out"}
             </span>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: p.tag ? "var(--accent)" : "var(--ink-3)" }}>
               {p.tag || "—"}
@@ -200,6 +201,7 @@ function ProductEditor({ product, onClose, onSave }) {
     const e = validate();
     setErrors(e);
     if (Object.keys(e).length > 0) return;
+    const stockVal = f.stock != null ? Math.max(0, parseInt(f.stock) || 0) : 0;
     const clean = {
       ...f,
       price: Number(f.price),
@@ -207,8 +209,9 @@ function ProductEditor({ product, onClose, onSave }) {
       tag: f.tag?.trim() || null,
       image: f.image?.trim() || "",
       darazUrl: f.darazUrl?.trim() || null,
-      inStock: f.inStock !== false,
+      inStock: stockVal > 0,
       featured: f.featured || false,
+      stock: stockVal,
     };
     delete clean.isNew;
     onSave(clean);
@@ -367,13 +370,30 @@ function ProductEditor({ product, onClose, onSave }) {
             : <span className="hint">When set, a "Buy from Daraz" button appears on this product's page.</span>}
         </div>
 
-        <div style={{ display: "flex", gap: 24, alignItems: "center", marginTop: 18, padding: "16px 18px", border: "1px solid var(--rule)", background: "var(--bg-2)" }}>
+        <div style={{ display: "flex", gap: 24, alignItems: "center", marginTop: 18, padding: "16px 18px", border: "1px solid var(--rule)", background: "var(--bg-2)", flexWrap: "wrap" }}>
+          <div className="fld" style={{ minWidth: 120 }}>
+            <label>Stock Quantity</label>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <button type="button" className="chip" style={{ width: 32, height: 32, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18 }}
+                onClick={() => set("stock", Math.max(0, (Number(f.stock) || 0) - 1))}>−</button>
+              <input type="number" min="0" value={f.stock != null ? f.stock : 0}
+                onChange={e => {
+                  const val = Math.max(0, parseInt(e.target.value) || 0);
+                  set("stock", val);
+                  set("inStock", val > 0);
+                }}
+                style={{ width: 70, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 16 }} />
+              <button type="button" className="chip" style={{ width: 32, height: 32, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18 }}
+                onClick={() => { set("stock", (Number(f.stock) || 0) + 1); set("inStock", true); }}>+</button>
+            </div>
+            <span className="hint">Set to 0 to mark out of stock</span>
+          </div>
           <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", flex: 1 }}>
-            <input type="checkbox" checked={f.inStock !== false} onChange={e => set("inStock", e.target.checked)} style={{ accentColor: "var(--accent)", width: 18, height: 18 }} />
+            <input type="checkbox" checked={f.inStock !== false} onChange={e => { set("inStock", e.target.checked); if (!e.target.checked) set("stock", 0); }} style={{ accentColor: "var(--accent)", width: 18, height: 18 }} />
             <span>
               <strong>In Stock</strong>
               <span style={{ display: "block", fontSize: 12, color: "var(--ink-3)", marginTop: 2 }}>
-                Uncheck to mark as out of stock — hides "Add to Cart" on the storefront
+                Auto-set when stock is above 0
               </span>
             </span>
           </label>
