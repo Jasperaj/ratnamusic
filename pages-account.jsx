@@ -505,7 +505,7 @@ function AboutPage({ navigate }) {
         <span className="h-eyebrow">About · हाम्रो बारेमा</span>
         <h1>A storefront for<br />Nepal's musical lineage.</h1>
         <div className="ne-h1">परम्परा, मञ्च र विद्यालयका लागि</div>
-        <p className="lead">Ratna Music Store began in 2018 as a small shop in Bangemuda Chowk, Kathmandu, selling guitars to weekend players. Eight years later, we stock everything from hand-carved sarangis sourced directly from Bhojpur to stage-ready amplifiers — and we deliver, cash on the doorstep, across Nepal.</p>
+        <p className="lead">Ratna Music began in 2018 as a small shop in Bangemuda Chowk, Kathmandu, selling guitars to weekend players. Eight years later, we stock everything from hand-carved sarangis sourced directly from Bhojpur to stage-ready amplifiers — and we deliver, cash on the doorstep, across Nepal.</p>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, alignItems: "stretch", marginBottom: 56 }}>
           <div style={{ aspectRatio: "4/3" }}><Placeholder label="store · bangemuda chowk storefront" tone="dark" style={{ height: "100%" }} /></div>
@@ -521,7 +521,7 @@ function AboutPage({ navigate }) {
             <a className="link-btn" href="https://www.google.com/maps/place/Ratna+Music/@27.70896,85.3093001,18z/data=!4m6!3m5!1s0x39eb19571250bb3d:0x5afd15904287e99a!8m2!3d27.7082191!4d85.3098687!16s%2Fg%2F11gy4_3nk6" target="_blank" rel="noopener noreferrer">Open in Google Maps ↗</a>
           </div>
           <div className="map-frame">
-            <iframe title="Ratna Music Store — Bangemuda Chowk, Kathmandu" src="https://www.google.com/maps?q=27.7082191,85.3098687&z=17&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
+            <iframe title="Ratna Music — Bangemuda Chowk, Kathmandu" src="https://www.google.com/maps?q=27.7082191,85.3098687&z=17&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
           </div>
           <p className="map-foot h-mono">
             <span>Bangemuda Chowk, Chittardhar Marg, Kathmandu</span>

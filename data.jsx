@@ -1,5 +1,5 @@
 // =========================================================
-// Ratna Music Store — Catalog & shared utils  v2
+// Ratna Music — Catalog & shared utils  v2
 // Added: Wind Instruments, Drums & Percussion categories
 // =========================================================
 
