@@ -49,8 +49,8 @@ function HomePage({ navigate, onAdd, heroLayout }) {
               <span className="h-mono" style={{ fontFamily: "var(--font-deva)" }}>संस्करण १२</span>
             </div>
             <h1 className="h-display">
-              <span className="ne-line">हिमालयदेखि स्टेजसम्म</span>
-              The instruments<br />of the <span className="it">himalaya</span>,<br />delivered.
+              <span className="ne-line">नेपालको उत्कृष्ट बाजा पसल</span>
+              Best Musical<br />Instrument Store<br />in <span className="it">Nepal</span>.
             </h1>
             <p className="lead">
               From hand-carved sarangis of the eastern hills to gig-ready amplifiers — {products.length || "40"}+ curated instruments, cash on delivery anywhere in Nepal.
