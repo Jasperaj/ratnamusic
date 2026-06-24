@@ -279,6 +279,39 @@ function sbSubscribeProfiles(onChange) {
   return () => sb.removeChannel(ch);
 }
 
+// ---------- SOCIAL POSTS ----------
+async function sbFetchSocialPosts() {
+  const { data, error } = await sb.from("social_posts").select("*").eq("active", true).order("sort_order").order("created_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+async function sbFetchAllSocialPosts() {
+  const { data, error } = await sb.from("social_posts").select("*").order("sort_order").order("created_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+async function sbUpsertSocialPost(post) {
+  const row = {
+    platform: post.platform,
+    post_url: post.post_url,
+    caption: post.caption || null,
+    active: post.active !== false,
+    sort_order: post.sort_order || 0,
+    updated_at: new Date().toISOString(),
+  };
+  if (post.id) row.id = post.id;
+  const { data, error } = await sb.from("social_posts").upsert(row).select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function sbDeleteSocialPost(id) {
+  const { error } = await sb.from("social_posts").delete().eq("id", id);
+  if (error) throw error;
+}
+
 Object.assign(window, {
   sb, SUPABASE_URL,
   sbSignIn, sbSignInWithGoogle, sbSendEmailOtp, sbVerifyEmailOtp,
@@ -287,5 +320,6 @@ Object.assign(window, {
   sbFetchProducts, sbSeedProductsIfEmpty, sbUpsertProduct, sbDeleteProduct,
   sbFetchOrders, sbInsertOrder, sbUpdateOrderStatus,
   sbSubscribeProducts, sbSubscribeOrders, sbSubscribeProfiles,
+  sbFetchSocialPosts, sbFetchAllSocialPosts, sbUpsertSocialPost, sbDeleteSocialPost,
   dbToProduct, productToDb, dbToOrder, orderToDb,
 });

@@ -80,6 +80,9 @@ function HomePage({ navigate, onAdd, heroLayout }) {
         </div>
       </section>
 
+      {/* === SOCIAL MEDIA === */}
+      <SocialSection />
+
       {/* === CATEGORIES === */}
       <section className="section">
         <div className="wrap">
@@ -570,4 +573,248 @@ function AllProductsPage({ navigate, onAdd }) {
   );
 }
 
-Object.assign(window, { HomePage, CategoryPage, ProductPage, AllProductsPage });
+// ===== Social Media Embed Helpers =====
+
+function detectPlatform(url) {
+  if (/tiktok\.com/i.test(url)) return "tiktok";
+  if (/instagram\.com/i.test(url)) return "instagram";
+  if (/facebook\.com|fb\.watch/i.test(url)) return "facebook";
+  return null;
+}
+
+// Extract TikTok video ID from URL
+function tiktokVideoId(url) {
+  const m = url.match(/video\/(\d+)/);
+  return m ? m[1] : null;
+}
+
+// Single social embed card
+function SocialEmbed({ post }) {
+  const ref = React.useRef(null);
+  const [loaded, setLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!ref.current) return;
+    setLoaded(false);
+    const el = ref.current;
+    el.innerHTML = "";
+
+    if (post.platform === "tiktok") {
+      const vid = tiktokVideoId(post.post_url);
+      if (!vid) { el.textContent = "Invalid TikTok URL"; return; }
+      const cite = `https://www.tiktok.com/embed/v2/${vid}`;
+      const iframe = document.createElement("iframe");
+      iframe.src = cite;
+      iframe.style.cssText = "width:100%;height:100%;border:none;border-radius:12px;";
+      iframe.allowFullscreen = true;
+      iframe.onload = () => setLoaded(true);
+      el.appendChild(iframe);
+    } else if (post.platform === "instagram") {
+      // Use Instagram embed iframe
+      const embedUrl = post.post_url.replace(/\?.*$/, "").replace(/\/$/, "") + "/embed";
+      const iframe = document.createElement("iframe");
+      iframe.src = embedUrl;
+      iframe.style.cssText = "width:100%;height:100%;border:none;border-radius:12px;overflow:hidden;";
+      iframe.allowFullscreen = true;
+      iframe.onload = () => setLoaded(true);
+      el.appendChild(iframe);
+    } else if (post.platform === "facebook") {
+      const iframe = document.createElement("iframe");
+      iframe.src = "https://www.facebook.com/plugins/video.php?href=" + encodeURIComponent(post.post_url) + "&show_text=false&width=350";
+      iframe.style.cssText = "width:100%;height:100%;border:none;border-radius:12px;overflow:hidden;";
+      iframe.allowFullscreen = true;
+      iframe.allow = "autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share";
+      iframe.onload = () => setLoaded(true);
+      el.appendChild(iframe);
+    }
+  }, [post.post_url, post.platform]);
+
+  const platformIcon = { tiktok: "TikTok", instagram: "Instagram", facebook: "Facebook" };
+  const platformColor = { tiktok: "#000", instagram: "#E1306C", facebook: "#1877F2" };
+
+  return (
+    <div className="social-card" style={{ position: "relative", background: "var(--bg-2)", borderRadius: 12, overflow: "hidden", aspectRatio: "9/16", minHeight: 480 }}>
+      {!loaded && (
+        <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", color: "var(--ink-3)", fontSize: 13 }}>
+          Loading {platformIcon[post.platform]}...
+        </div>
+      )}
+      <div ref={ref} style={{ width: "100%", height: "100%" }} />
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0,
+        background: "linear-gradient(transparent, rgba(0,0,0,0.7))",
+        padding: "24px 14px 12px", color: "white", fontSize: 11, fontFamily: "var(--font-mono)",
+        display: "flex", justifyContent: "space-between", alignItems: "center", pointerEvents: "none"
+      }}>
+        <span style={{ background: platformColor[post.platform], padding: "3px 8px", borderRadius: 4, fontWeight: 600, fontSize: 10 }}>
+          {platformIcon[post.platform]}
+        </span>
+        {post.caption && <span style={{ opacity: 0.8, maxWidth: "60%", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>{post.caption}</span>}
+      </div>
+    </div>
+  );
+}
+
+// ===== Social Section for Homepage =====
+function SocialSection() {
+  const [posts, setPosts] = React.useState([]);
+  const [err, setErr] = React.useState(null);
+
+  React.useEffect(() => {
+    sbFetchSocialPosts()
+      .then(data => setPosts(data))
+      .catch(e => { console.error("Social fetch:", e); setErr(e.message); });
+  }, []);
+
+  if (posts.length === 0) return null;
+
+  return (
+    <section className="section" style={{ borderTop: "1px solid var(--rule)", background: "var(--bg-2)" }}>
+      <div className="wrap">
+        <div className="section-head">
+          <div>
+            <span className="h-eyebrow">Follow us · हामीलाई फलो गर्नुहोस्</span>
+            <h2 className="h-display">Latest from<br />our socials.</h2>
+          </div>
+          <div className="meta h-mono" style={{ display: "flex", gap: 16 }}>
+            <span style={{ color: "var(--ink-3)" }}>TikTok · Instagram · Facebook</span>
+          </div>
+        </div>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+          gap: 24, marginTop: 8
+        }}>
+          {posts.map(p => <SocialEmbed key={p.id} post={p} />)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ===== Admin: Social Posts Manager =====
+function SocialPostsAdmin() {
+  const [posts, setPosts] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [newUrl, setNewUrl] = React.useState("");
+  const [newCaption, setNewCaption] = React.useState("");
+  const [saving, setSaving] = React.useState(false);
+  const [error, setError] = React.useState("");
+
+  const load = async () => {
+    try {
+      setLoading(true);
+      const data = await sbFetchAllSocialPosts();
+      setPosts(data);
+    } catch (e) { setError(e.message); }
+    finally { setLoading(false); }
+  };
+
+  React.useEffect(() => { load(); }, []);
+
+  const addPost = async (e) => {
+    e?.preventDefault();
+    const url = newUrl.trim();
+    if (!url) return;
+    const platform = detectPlatform(url);
+    if (!platform) { setError("URL must be from TikTok, Instagram, or Facebook."); return; }
+    setSaving(true); setError("");
+    try {
+      await sbUpsertSocialPost({ platform, post_url: url, caption: newCaption.trim(), active: true, sort_order: 0 });
+      setNewUrl(""); setNewCaption("");
+      await load();
+    } catch (e) { setError("Save failed: " + e.message); }
+    finally { setSaving(false); }
+  };
+
+  const toggleActive = async (post) => {
+    try {
+      await sbUpsertSocialPost({ ...post, active: !post.active });
+      await load();
+    } catch (e) { setError(e.message); }
+  };
+
+  const remove = async (id) => {
+    if (!confirm("Delete this social post?")) return;
+    try {
+      await sbDeleteSocialPost(id);
+      await load();
+    } catch (e) { setError(e.message); }
+  };
+
+  const platformIcon = { tiktok: "TikTok", instagram: "Instagram", facebook: "Facebook" };
+  const platformColor = { tiktok: "#000", instagram: "#E1306C", facebook: "#1877F2" };
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+        <div>
+          <h2 style={{ fontFamily: "var(--font-display)", margin: "0 0 4px" }}>Social Posts</h2>
+          <div className="h-mono" style={{ color: "var(--ink-3)", fontSize: 11 }}>
+            Paste a TikTok, Instagram, or Facebook post/reel URL to embed it on the homepage.
+          </div>
+        </div>
+        <span className="h-mono" style={{ color: "var(--ink-3)" }}>{posts.filter(p => p.active).length} active</span>
+      </div>
+
+      {/* Add new */}
+      <form onSubmit={addPost} style={{ border: "1px solid var(--rule)", padding: 20, marginBottom: 28, background: "var(--bg-2)" }}>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <div className="fld" style={{ flex: 2, minWidth: 280 }}>
+            <label>Post / Reel URL</label>
+            <input type="url" value={newUrl} onChange={e => { setNewUrl(e.target.value); setError(""); }}
+              placeholder="https://www.tiktok.com/@ratnamusic/video/..." disabled={saving} />
+          </div>
+          <div className="fld" style={{ flex: 1, minWidth: 180 }}>
+            <label>Caption (optional)</label>
+            <input type="text" value={newCaption} onChange={e => setNewCaption(e.target.value)}
+              placeholder="New guitar drop!" disabled={saving} />
+          </div>
+          <div style={{ display: "flex", alignItems: "flex-end" }}>
+            <button type="submit" className="btn accent" disabled={saving || !newUrl.trim()}>
+              {saving ? "Adding…" : "Add Post"}
+            </button>
+          </div>
+        </div>
+        {error && <div className="admin-login-error" role="alert" style={{ marginTop: 12 }}>{error}</div>}
+      </form>
+
+      {/* List */}
+      {loading ? (
+        <div style={{ padding: 40, textAlign: "center", color: "var(--ink-3)" }}>Loading…</div>
+      ) : posts.length === 0 ? (
+        <div style={{ padding: 60, textAlign: "center", border: "1px dashed var(--rule)" }}>
+          <p style={{ color: "var(--ink-2)", margin: "0 0 8px" }}>No social posts yet.</p>
+          <p className="h-mono" style={{ color: "var(--ink-3)", fontSize: 11 }}>Paste a URL above to add one.</p>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {posts.map(p => (
+            <div key={p.id} style={{
+              display: "flex", alignItems: "center", gap: 14, padding: "14px 18px",
+              border: "1px solid var(--rule)", background: p.active ? "var(--bg)" : "var(--bg-2)",
+              opacity: p.active ? 1 : 0.55
+            }}>
+              <span style={{
+                background: platformColor[p.platform], color: "white",
+                padding: "3px 8px", borderRadius: 4, fontSize: 10, fontWeight: 600, fontFamily: "var(--font-mono)", minWidth: 70, textAlign: "center"
+              }}>
+                {platformIcon[p.platform]}
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.post_url}</div>
+                {p.caption && <div className="h-mono" style={{ color: "var(--ink-3)", fontSize: 11, marginTop: 2 }}>{p.caption}</div>}
+              </div>
+              <button className="chip" aria-pressed={p.active} onClick={() => toggleActive(p)} title={p.active ? "Hide from homepage" : "Show on homepage"}>
+                {p.active ? "Visible" : "Hidden"}
+              </button>
+              <button className="link-btn" style={{ color: "var(--ink-3)" }} onClick={() => remove(p.id)}>Delete</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+Object.assign(window, { HomePage, CategoryPage, ProductPage, AllProductsPage, SocialSection, SocialPostsAdmin });

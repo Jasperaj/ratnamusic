@@ -402,7 +402,7 @@ function AdminPage({ navigate }) {
         </div>
 
         <div style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--rule)", marginBottom: 32 }}>
-          {[["orders", "Orders (" + orders.length + ")"], ["products", "Products (" + getProducts().length + ")"]].map(([id, label]) => (
+          {[["orders", "Orders (" + orders.length + ")"], ["products", "Products (" + getProducts().length + ")"], ["social", "Social Posts"]].map(([id, label]) => (
             <button key={id} className="chip" aria-pressed={tab === id} onClick={() => setTab(id)}
               style={{ borderRadius: 0, border: 0, borderBottom: tab === id ? "2px solid var(--ink)" : "2px solid transparent", padding: "12px 18px" }}>
               {label}
@@ -440,6 +440,8 @@ function AdminPage({ navigate }) {
         )}
 
         {tab === "products" && <ProductsAdmin />}
+
+        {tab === "social" && <SocialPostsAdmin />}
 
         {selected && (
           <div className="modal-scrim" onClick={() => setSelectedId(null)}>
