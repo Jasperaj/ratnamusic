@@ -74,11 +74,7 @@ function SiteHeader({ route, navigate, openCart, openLogin }) {
       <header className="site-header">
         <div className="wrap">
           <div className="brand" onClick={() => navigate({ name: "home" })} style={{ cursor: "pointer" }}>
-            <div className="brand-mark"><span className="m">र</span></div>
-            <div className="brand-name">
-              <span className="en">Ratna Music Store</span>
-              <span className="ne">रत्न म्युजिक स्टोर</span>
-            </div>
+            <img src="logo.jpg" alt="Ratna Music Store" style={{ height: 48, width: "auto", objectFit: "contain" }} />
           </div>
 
           {/* Desktop nav */}
@@ -200,11 +196,7 @@ function SiteFooter({ navigate }) {
         <div className="top">
           <div>
             <div className="brand" style={{ marginBottom: 20 }}>
-              <div className="brand-mark"><span className="m">र</span></div>
-              <div className="brand-name">
-                <span className="en">Ratna Music Store</span>
-                <span className="ne">रत्न म्युजिक स्टोर</span>
-              </div>
+              <img src="logo.jpg" alt="Ratna Music Store" style={{ height: 56, width: "auto", objectFit: "contain" }} />
             </div>
             <p style={{ color: "var(--ink-2)", fontSize: 13, maxWidth: "38ch", margin: 0 }}>
               Curating Nepal's finest musical instruments — from the high-altitude lutes of Solukhumbu to gig-ready amplifiers — since 2018.
