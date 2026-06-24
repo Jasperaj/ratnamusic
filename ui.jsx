@@ -74,10 +74,10 @@ function SiteHeader({ route, navigate, openCart, openLogin }) {
       <header className="site-header">
         <div className="wrap">
           <div className="brand" onClick={() => navigate({ name: "home" })} style={{ cursor: "pointer" }}>
-            <div className="brand-mark"><span className="m">न</span></div>
+            <div className="brand-mark"><span className="m">र</span></div>
             <div className="brand-name">
-              <span className="en">Nepal Musical Store</span>
-              <span className="ne">नेपाल म्युजिकल स्टोर</span>
+              <span className="en">Ratna Music Store</span>
+              <span className="ne">रत्न म्युजिक स्टोर</span>
             </div>
           </div>
 
@@ -200,10 +200,10 @@ function SiteFooter({ navigate }) {
         <div className="top">
           <div>
             <div className="brand" style={{ marginBottom: 20 }}>
-              <div className="brand-mark"><span className="m">न</span></div>
+              <div className="brand-mark"><span className="m">र</span></div>
               <div className="brand-name">
-                <span className="en">Nepal Musical Store</span>
-                <span className="ne">नेपाल म्युजिकल स्टोर</span>
+                <span className="en">Ratna Music Store</span>
+                <span className="ne">रत्न म्युजिक स्टोर</span>
               </div>
             </div>
             <p style={{ color: "var(--ink-2)", fontSize: 13, maxWidth: "38ch", margin: 0 }}>
@@ -230,15 +230,14 @@ function SiteFooter({ navigate }) {
           <div>
             <h4>Visit</h4>
             <ul>
-              <li>Putalisadak, Kathmandu</li>
-              <li>+977 1-4242424</li>
-              <li>hello@nepalmusical.np</li>
+              <li>Bangemuda Chowk, Chittardhar Marg, Kathmandu</li>
+              <li>+977 9803085676</li>
               <li style={{ fontFamily: "var(--font-deva)", marginTop: 6 }}>आइतबार – शुक्रबार · १०–८</li>
             </ul>
           </div>
         </div>
         <div className="bot">
-          <span>© 2026 Nepal Musical Store</span>
+          <span>© 2026 Ratna Music Store</span>
           <span>Cash on Delivery · Kathmandu, Nepal</span>
         </div>
       </div>

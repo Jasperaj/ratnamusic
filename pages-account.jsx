@@ -503,10 +503,10 @@ function AboutPage({ navigate }) {
         <span className="h-eyebrow">About · हाम्रो बारेमा</span>
         <h1>A storefront for<br />Nepal's musical lineage.</h1>
         <div className="ne-h1">परम्परा, मञ्च र विद्यालयका लागि</div>
-        <p className="lead">Nepal Musical Store began in 2018 as a small shop in Putalisadak, selling guitars to weekend players. Eight years later, we stock everything from hand-carved sarangis sourced directly from Bhojpur to stage-ready amplifiers — and we deliver, cash on the doorstep, across Nepal.</p>
+        <p className="lead">Ratna Music Store began in 2018 as a small shop in Bangemuda Chowk, Kathmandu, selling guitars to weekend players. Eight years later, we stock everything from hand-carved sarangis sourced directly from Bhojpur to stage-ready amplifiers — and we deliver, cash on the doorstep, across Nepal.</p>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, alignItems: "stretch", marginBottom: 56 }}>
-          <div style={{ aspectRatio: "4/3" }}><Placeholder label="store · putalisadak storefront" tone="dark" style={{ height: "100%" }} /></div>
+          <div style={{ aspectRatio: "4/3" }}><Placeholder label="store · bangemuda chowk storefront" tone="dark" style={{ height: "100%" }} /></div>
           <div style={{ aspectRatio: "4/3" }}><Placeholder label="store keeper · ramesh dai" tone="saffron" style={{ height: "100%" }} /></div>
         </div>
 
@@ -514,33 +514,32 @@ function AboutPage({ navigate }) {
           <div className="map-head">
             <div>
               <span className="h-eyebrow">Find us · पसल कहाँ छ</span>
-              <h2>Putalisadak, Kathmandu.</h2>
+              <h2>Bangemuda Chowk, Kathmandu.</h2>
             </div>
-            <a className="link-btn" href="https://www.google.com/maps/search/?api=1&query=Putalisadak%2C+Kathmandu%2C+Nepal" target="_blank" rel="noopener noreferrer">Open in Google Maps ↗</a>
+            <a className="link-btn" href="https://www.google.com/maps/place/Ratna+Music/@27.70896,85.3093001,18z/data=!4m6!3m5!1s0x39eb19571250bb3d:0x5afd15904287e99a!8m2!3d27.7082191!4d85.3098687!16s%2Fg%2F11gy4_3nk6" target="_blank" rel="noopener noreferrer">Open in Google Maps ↗</a>
           </div>
           <div className="map-frame">
-            <iframe title="Nepal Musical Store — Putalisadak, Kathmandu" src="https://www.google.com/maps?q=Putalisadak%2C+Kathmandu%2C+Nepal&z=16&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
+            <iframe title="Ratna Music Store — Bangemuda Chowk, Kathmandu" src="https://www.google.com/maps?q=27.7082191,85.3098687&z=17&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
           </div>
           <p className="map-foot h-mono">
-            <span>Putalisadak Marg, opposite Padmodaya School</span>
-            <span className="sep">·</span><span className="h-deva">पुतलीसडक</span>
-            <span className="sep">·</span><span>10 min from Ratna Park</span>
+            <span>Bangemuda Chowk, Chittardhar Marg, Kathmandu</span>
+            <span className="sep">·</span><span className="h-deva">बँगेमुढा चोक</span>
+            <span className="sep">·</span><span>+977 9803085676</span>
           </p>
         </section>
 
         <div className="columns">
           <div>
             <span className="meta">01 — Visit</span>
-            <h3>Putalisadak, Kathmandu</h3>
-            <p style={{ color: "var(--ink-2)", marginTop: 8 }}>Putalisadak Marg, opposite Padmodaya School. <span className="h-deva">पुतलीसडक</span></p>
+            <h3>Bangemuda Chowk, Kathmandu</h3>
+            <p style={{ color: "var(--ink-2)", marginTop: 8 }}>Chittardhar Marg, Bangemuda Chowk, Kathmandu, Nepal. <span className="h-deva">बँगेमुढा चोक</span></p>
             <p className="h-mono" style={{ color: "var(--ink-3)", marginTop: 12, fontSize: 11 }}>Sun – Fri · 10:00 – 20:00<br />Saturday · Closed</p>
-            <a className="link-btn" href="https://www.google.com/maps/search/?api=1&query=Putalisadak%2C+Kathmandu%2C+Nepal" target="_blank" rel="noopener noreferrer" style={{ marginTop: 14, display: "inline-block" }}>Get directions ↗</a>
+            <a className="link-btn" href="https://www.google.com/maps/place/Ratna+Music/@27.70896,85.3093001,18z/data=!4m6!3m5!1s0x39eb19571250bb3d:0x5afd15904287e99a!8m2!3d27.7082191!4d85.3098687!16s%2Fg%2F11gy4_3nk6" target="_blank" rel="noopener noreferrer" style={{ marginTop: 14, display: "inline-block" }}>Get directions ↗</a>
           </div>
           <div>
             <span className="meta">02 — Call</span>
-            <h3>+977 1-4242424</h3>
+            <h3>+977 9803085676</h3>
             <p style={{ color: "var(--ink-2)", marginTop: 8 }}>Call our store keeper directly. We answer between 10 AM and 8 PM, every day except Saturday.</p>
-            <p className="h-mono" style={{ color: "var(--ink-3)", marginTop: 12, fontSize: 11 }}>Mobile: +977 98-41-23-45-67</p>
           </div>
           <div>
             <span className="meta">03 — Promise</span>
