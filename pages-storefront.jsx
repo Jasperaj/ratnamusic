@@ -69,12 +69,14 @@ function HomePage({ navigate, onAdd, heroLayout }) {
           </div>
           {heroLayout === "marquee" ? (
             <React.Fragment>
-              <div className="hero-stage"><Placeholder label="sarangi · editorial shot" tone="dark" style={{ height: "100%" }} /></div>
+              <div className="hero-stage">
+                <img src="https://static-01.daraz.com.np/p/4e8cee6cbebef9f6d2bbde3692d2ba86.jpg" alt="Semi Acoustic 40 Inch Guitar Combo" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 6 }} />
+              </div>
               <div className="hero-stage side"><Placeholder label="madal close-up" tone="saffron" style={{ height: "100%" }} /></div>
             </React.Fragment>
           ) : (
             <div className="hero-stage">
-              <Placeholder label="hero · sarangi / madal editorial composition" tone="dark" style={{ height: "100%" }} />
+              <img src="https://static-01.daraz.com.np/p/4e8cee6cbebef9f6d2bbde3692d2ba86.jpg" alt="Semi Acoustic 40 Inch Guitar Combo" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 6 }} />
             </div>
           )}
         </div>
