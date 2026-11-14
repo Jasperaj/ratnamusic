@@ -64,23 +64,34 @@ function useStore() {
 
 // ===== Bootstrap Supabase =====
 async function bootstrapFromSupabase() {
+  // Catalog data is public and must not be blocked by the more restricted
+  // orders policy used for anonymous checkout/admin access.
   try {
-    const [products, orders] = await Promise.all([sbFetchProducts(), sbFetchOrders()]);
-    setStateGlobal(s => ({ ...s, products, orders, loading: false, error: null }));
+    const products = await sbFetchProducts();
+    setStateGlobal(s => ({ ...s, products, loading: false, error: null }));
 
     sbSubscribeProducts(async () => {
       try { const fresh = await sbFetchProducts(); setStateGlobal(s => ({ ...s, products: fresh })); } catch (e) {}
     });
+  } catch (e) {
+    console.error("Product catalog bootstrap failed", e);
+    setStateGlobal(s => ({
+      ...s, loading: false,
+      error: "Couldn't reach the store catalog: " + (e?.message || e) + " — showing offline catalog.",
+      products: PRODUCTS,
+    }));
+  }
+
+  // Guest users are not allowed to read orders. Keep catalog loading
+  // successful even when this request is rejected by RLS.
+  try {
+    const orders = await sbFetchOrders();
+    setStateGlobal(s => ({ ...s, orders }));
     sbSubscribeOrders(async () => {
       try { const fresh = await sbFetchOrders(); setStateGlobal(s => ({ ...s, orders: fresh })); } catch (e) {}
     });
   } catch (e) {
-    console.error("Bootstrap failed", e);
-    setStateGlobal(s => ({
-      ...s, loading: false,
-      error: "Couldn't reach the store database: " + (e?.message || e) + " — showing offline catalog.",
-      products: PRODUCTS,
-    }));
+    console.warn("Orders unavailable for current session", e);
   }
 }
 
@@ -111,66 +122,11 @@ function getCountByCat() {
   return acc;
 }
 
-async function upsertProduct(product) {
-  const before = _state.products;
-  setStateGlobal(s => {
-    const list = s.products || PRODUCTS;
-    const idx = list.findIndex(p => p.id === product.id);
-    const next = idx >= 0 ? list.map((p, i) => i === idx ? { ...p, ...product } : p) : [{ ...product }, ...list];
-    return { ...s, products: next, syncing: true };
-  });
-  try {
-    const saved = await sbUpsertProduct(product);
-    setStateGlobal(s => ({
-      ...s,
-      products: (s.products || []).map(p => p.id === saved.id ? saved : p),
-      syncing: false, error: null,
-    }));
-    return saved;
-  } catch (e) {
-    setStateGlobal(s => ({ ...s, products: before, syncing: false, error: "Save failed: " + (e.message || e) }));
-    throw e;
-  }
-}
-
-async function deleteProduct(id) {
-  const before = _state.products;
-  setStateGlobal(s => ({ ...s, products: (s.products || []).filter(p => p.id !== id), syncing: true }));
-  try {
-    await sbDeleteProduct(id);
-    setStateGlobal(s => ({ ...s, syncing: false, error: null }));
-  } catch (e) {
-    setStateGlobal(s => ({ ...s, products: before, syncing: false, error: "Delete failed: " + (e.message || e) }));
-    throw e;
-  }
-}
-
-async function resetProducts() {
-  try {
-    setStateGlobal(s => ({ ...s, syncing: true }));
-    const current = _state.products || [];
-    for (const p of current) { await sbDeleteProduct(p.id); }
-    await sbSeedProductsIfEmpty(PRODUCTS);
-    const fresh = await sbFetchProducts();
-    setStateGlobal(s => ({ ...s, products: fresh, syncing: false, error: null }));
-  } catch (e) {
-    setStateGlobal(s => ({ ...s, syncing: false, error: "Reset failed: " + (e?.message || e) }));
-    throw e;
-  }
-}
-
-function generateProductId() {
-  return generateUUID();
-}
-
-function clearError() { setStateGlobal(s => ({ ...s, error: null })); }
-
 // ===== Cart =====
 function cartCount(state) { return (state.cart || []).reduce((s, i) => s + i.qty, 0); }
 function cartSubtotal(state) {
   return (state.cart || []).reduce((s, i) => {
     const p = getProductById(i.id);
-    // Use product price if available, fall back to stored price in cart item
     const price = p ? p.price : (i.price || 0);
     return s + price * i.qty;
   }, 0);
@@ -183,7 +139,6 @@ function deliveryFee(subtotal) {
 function addToCart(id, qty = 1) {
   const p = getProductById(id);
   if (!p) return;
-  // Enforce stock limit
   const availStock = p.stock != null ? p.stock : (p.inStock !== false ? 999 : 0);
   if (availStock <= 0) return;
   setStateGlobal(s => {
@@ -191,11 +146,10 @@ function addToCart(id, qty = 1) {
     const currentQty = existing ? existing.qty : 0;
     const maxAdd = Math.max(0, availStock - currentQty);
     const actualQty = Math.min(qty, maxAdd);
-    if (actualQty <= 0) return s; // already at stock limit
+    if (actualQty <= 0) return s;
     if (existing) {
       return { ...s, cart: s.cart.map(i => i.id === id ? { ...i, qty: i.qty + actualQty } : i) };
     }
-    // Store price and name in cart so totals work even if catalog hasn't loaded
     const item = { id, qty: actualQty, price: p?.price || 0, name: p?.name || "", ne: p?.ne || "" };
     return { ...s, cart: [...s.cart, item] };
   });
@@ -357,7 +311,6 @@ async function initAuth() {
 // Keep for backward compat — now delegates to initAuth
 function initAdminAuth() { return initAuth(); }
 
-// Generate a UUID (v4) — used as the Supabase primary key
 function generateUUID() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
@@ -366,7 +319,6 @@ function generateUUID() {
   });
 }
 
-// Human-readable reference shown to customers (e.g. NMS-M4T8M-39)
 function generateOrderRef() {
   return "NMS-" + Date.now().toString(36).toUpperCase().slice(-5) + "-" + Math.floor(Math.random() * 90 + 10);
 }
@@ -380,8 +332,8 @@ async function placeOrder(userProfile) {
   });
   const sub = cartSubtotal(state);
   const fee = deliveryFee(sub);
-  const uuid = generateUUID();          // stored as DB primary key
-  const ref  = generateOrderRef();      // shown to customers in UI
+  const uuid = generateUUID();
+  const ref  = generateOrderRef();
   const order = {
     id: uuid, ref,
     createdAt: new Date().toISOString(),
@@ -401,12 +353,10 @@ async function placeOrder(userProfile) {
       syncing: false, error: null,
     }));
 
-    // Decrement stock for each ordered item
     for (const item of items) {
       try { await sbDecrementStock(item.id, item.qty); } catch (e) { console.error("Stock decrement:", e); }
     }
 
-    // Persist profile to Supabase after first order
     const userId = state.userSession?.user?.id;
     if (userId) {
       sbUpsertProfile(userId, { ...userProfile }).catch(e => console.error("Profile upsert:", e));
