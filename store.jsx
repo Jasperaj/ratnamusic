@@ -174,6 +174,8 @@ function getCountByCat() {
   return acc;
 }
 
+function clearError() { setStateGlobal(s => ({ ...s, error: null })); }
+
 // ===== Cart =====
 function cartCount(state) { return (state.cart || []).reduce((s, i) => s + i.qty, 0); }
 function cartSubtotal(state) {
