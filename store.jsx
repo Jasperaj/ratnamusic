@@ -112,6 +112,58 @@ async function seedCatalogManually() {
   }
 }
 
+async function upsertProduct(product) {
+  const before = _state.products;
+  setStateGlobal(s => {
+    const list = s.products || PRODUCTS;
+    const idx = list.findIndex(p => p.id === product.id);
+    const next = idx >= 0 ? list.map((p, i) => i === idx ? { ...p, ...product } : p) : [{ ...product }, ...list];
+    return { ...s, products: next, syncing: true };
+  });
+  try {
+    const saved = await sbUpsertProduct(product);
+    setStateGlobal(s => ({
+      ...s,
+      products: (s.products || []).map(p => p.id === saved.id ? saved : p),
+      syncing: false, error: null,
+    }));
+    return saved;
+  } catch (e) {
+    setStateGlobal(s => ({ ...s, products: before, syncing: false, error: "Save failed: " + (e.message || e) }));
+    throw e;
+  }
+}
+
+async function deleteProduct(id) {
+  const before = _state.products;
+  setStateGlobal(s => ({ ...s, products: (s.products || []).filter(p => p.id !== id), syncing: true }));
+  try {
+    await sbDeleteProduct(id);
+    setStateGlobal(s => ({ ...s, syncing: false, error: null }));
+  } catch (e) {
+    setStateGlobal(s => ({ ...s, products: before, syncing: false, error: "Delete failed: " + (e.message || e) }));
+    throw e;
+  }
+}
+
+async function resetProducts() {
+  try {
+    setStateGlobal(s => ({ ...s, syncing: true }));
+    const current = _state.products || [];
+    for (const p of current) await sbDeleteProduct(p.id);
+    await sbSeedProductsIfEmpty(PRODUCTS);
+    const fresh = await sbFetchProducts();
+    setStateGlobal(s => ({ ...s, products: fresh, syncing: false, error: null }));
+  } catch (e) {
+    setStateGlobal(s => ({ ...s, syncing: false, error: "Reset failed: " + (e?.message || e) }));
+    throw e;
+  }
+}
+
+function generateProductId() {
+  return generateUUID();
+}
+
 // ===== Product helpers =====
 function getProducts() { return _state.products || PRODUCTS; }
 function getProductById(id) { return getProducts().find(p => p.id === id); }
